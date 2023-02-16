@@ -1,0 +1,240 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: vizinho-solidario-api
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: "2"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  region: us-east-1
+  environment:
+    BUCKET_NAME: vizinho-solidario-api-de-serverlessdeploymentbuck-k8kfbxs5rmcl
+
+  # you can overwrite defaults here
+  #  stage: dev
+  #  region: us-east-1
+
+  # you can add statements to the Lambda function's IAM Role here
+  #  iamRoleStatements:
+  #    - Effect: "Allow"
+  #      Action:
+  #        - "s3:ListBucket"
+  #      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+  #    - Effect: "Allow"
+  #      Action:
+  #        - "s3:PutObject"
+  #      Resource:
+  #        Fn::Join:
+  #          - ""
+  #          - - "arn:aws:s3:::"
+  #            - "Ref" : "ServerlessDeploymentBucket"
+  #            - "/*"
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - "dynamodb:PutItem"
+            - "dynamodb:GetItem"
+            - "dynamodb:DeleteItem"
+            - "dynamodb:Scan"
+          Resource:
+            - { "Fn::GetAtt": ["UserTable", "Arn"] }
+            - { "Fn::GetAtt": ["GroupTable", "Arn"] }
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+# you can add packaging information here
+#package:
+#  patterns:
+#    - '!exclude-me.js'
+#    - '!exclude-me-dir/**'
+#    - include-me.js
+#    - include-me-dir/**
+
+functions:
+  # USER
+  createUser:
+    handler: src/handlers/user-handler.createUser
+    events:
+      - httpApi:
+          path: /user
+          method: post
+  getUser:
+    handler: src/handlers/user-handler.getUser
+    events:
+      - httpApi:
+          path: /user/{id}
+          method: get
+  updateUser:
+    handler: src/handlers/user-handler.updateUser
+    events:
+      - httpApi:
+          path: /user/{id}
+          method: put
+  deleteUser:
+    handler: src/handlers/user-handler.deleteUser
+    events:
+      - httpApi:
+          path: /user/{id}
+          method: delete
+  listUsers:
+    handler: src/handlers/user-handler.listUsers
+    events:
+      - httpApi:
+          path: /user
+          method: get
+  # GROUP
+  createGroup:
+    handler: src/handlers/group-handler.createGroup
+    events:
+      - httpApi:
+          path: /group
+          method: post
+  getGroup:
+    handler: src/handlers/group-handler.getGroup
+    events:
+      - httpApi:
+          path: /group/{id}
+          method: get
+  updateGroup:
+    handler: src/handlers/group-handler.updateGroup
+    events:
+      - httpApi:
+          path: /group/{id}
+          method: put
+  deleteGroup:
+    handler: src/handlers/group-handler.deleteGroup
+    events:
+      - httpApi:
+          path: /group/{id}
+          method: delete
+  listGroups:
+    handler: src/handlers/group-handler.listGroups
+    events:
+      - httpApi:
+          path: /group
+          method: get
+  getAddress:
+    handler: src/handlers/user-handler.getAddress
+    events:
+      - httpApi:
+          path: /address
+          method: post
+  uploadImage:
+    handler: src/handlers/upload-image-handler.uploadImage
+    events:
+      - http:
+          path: upload-image
+          method: post
+
+#    The following are a few example events you can configure
+#    NOTE: Please make sure to change your handler code to work with those events
+#    Check the event documentation for details
+#    events:
+#      - httpApi:
+#          path: /users/create
+#          method: get
+#      - websocket: $connect
+#      - s3: ${env:BUCKET}
+#      - schedule: rate(10 minutes)
+#      - sns: greeter-topic
+#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
+#      - alexaSkill: amzn1.ask.skill.xx-xx-xx-xx
+#      - alexaSmartHome: amzn1.ask.skill.xx-xx-xx-xx
+#      - iot:
+#          sql: "SELECT * FROM 'some_topic'"
+#      - cloudwatchEvent:
+#          event:
+#            source:
+#              - "aws.ec2"
+#            detail-type:
+#              - "EC2 Instance State-change Notification"
+#            detail:
+#              state:
+#                - pending
+#      - cloudwatchLog: '/aws/lambda/hello'
+#      - cognitoUserPool:
+#          pool: MyUserPool
+#          trigger: PreSignUp
+#      - alb:
+#          listenerArn: arn:aws:elasticloadbalancing:us-east-1:XXXXXX:listener/app/my-load-balancer/50dc6c495c0c9188/
+#          priority: 1
+#          conditions:
+#            host: example.com
+#            path: /hello
+
+#    Define function environment variables here
+#    environment:
+#      variable2: value2
+
+plugins:
+  - serverless-plugin-typescript
+  # - serverless-plugin-common-excludes
+  # - serverless-plugin-include-dependencies
+  # - knex
+# you can add CloudFormation resource templates here
+#resources:
+#  Resources:
+#    NewResource:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: my-new-bucket
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"
+resources:
+  Resources:
+    UserTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UserTable
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+    GroupTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: GroupTable
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+package:
+  patterns:
+    - "!.git/**"
+    - "!test/**"
+    - "!node_modules/**"
